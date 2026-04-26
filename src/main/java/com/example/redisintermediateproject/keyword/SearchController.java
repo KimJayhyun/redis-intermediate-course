@@ -1,12 +1,13 @@
 package com.example.redisintermediateproject.keyword;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,5 +24,10 @@ public class SearchController {
     @GetMapping("/top10")
     public List<String> getTop10Keywords() {
         return searchService.getTop10Keywords();
+    }
+
+    @GetMapping("/top10/redis")
+    public List<String> getTop10KeywordsWithRedis() {
+        return searchService.getTop10KeywordsWithRedis();
     }
 }
