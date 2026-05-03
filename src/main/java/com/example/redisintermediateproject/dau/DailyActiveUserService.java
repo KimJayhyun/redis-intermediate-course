@@ -2,6 +2,7 @@ package com.example.redisintermediateproject.dau;
 
 import java.time.LocalDate;
 
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +36,8 @@ public class DailyActiveUserService {
     LocalDate today = LocalDate.now();
     String key = "dau:" + today.toString(); // dau:2024-06-01
 
-    // Redis의 Set 자료구조를 활용하여 중복 없이 사용자 ID 저장
-    // SADD [key] [value]
-    redisTemplate.opsForSet().add(key, userId.toString());
+    // SETBIT [key] [offset] [value]
+    redisTemplate.opsForValue().setBit(key, userId, true);
 
     // DAU 데이터는 하루 동안만 유효하므로, 키의 유효 기간을 1일로 설정
     redisTemplate.expire(key, 1, java.util.concurrent.TimeUnit.DAYS);
@@ -46,9 +46,9 @@ public class DailyActiveUserService {
   public long getDauWithRedis(LocalDate date) {
     String key = "dau:" + date.toString();
 
-    // Redis의 Set 자료구조의 크기를 반환하여 DAU 계산
-    // SCARD [key]
-    Long dau = redisTemplate.opsForSet().size(key);
-    return dau != null ? dau : 0;
+    // Redis에 저장된 비트맵을 활용하여 DAU를 계산
+    // Redis 명령어의 'BITCOUNT [key]'와 동일하다.
+    return redisTemplate
+        .execute((RedisCallback<Long>) (connection) -> connection.bitCount(key.getBytes()));
   }
 }
